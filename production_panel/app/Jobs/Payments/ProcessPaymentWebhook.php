@@ -112,8 +112,16 @@ class ProcessPaymentWebhook implements ShouldQueue
         $userId = (int) Arr::get($resource, 'custom_id', Arr::get($resource, 'purchase_units.0.custom_id'));
         $amount = (float) Arr::get($resource, 'amount.value', Arr::get($resource, 'purchase_units.0.amount.value', 0));
 
-        if (in_array($event->event_type, ['CHECKOUT.ORDER.APPROVED', 'PAYMENT.CAPTURE.COMPLETED'], true)) {
+        if ($event->event_type === 'PAYMENT.CAPTURE.COMPLETED') {
             $ledger->creditDeposit('paypal', $userId, $amount, $reference, $resource);
+            return;
+        }
+
+        if ($event->event_type === 'CHECKOUT.ORDER.APPROVED') {
+            Log::info('PayPal order approved; waiting for capture completion before crediting funds.', [
+                'event_id' => $event->gateway_event_id,
+                'reference' => $reference,
+            ]);
             return;
         }
 
