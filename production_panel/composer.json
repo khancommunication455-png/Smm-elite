@@ -15,11 +15,12 @@
         "symfony/http-foundation": "^6.4"
     },
     "require-dev": {
+        "fakerphp/faker": "^1.23",
         "laravel/pint": "^1.14",
         "laravel/sail": "^1.26",
         "mockery/mockery": "^1.6",
-        "phpunit/phpunit": "^10.5",
-        "fakerphp/faker": "^1.23"
+        "nunomaduro/collision": "^7.12",
+        "phpunit/phpunit": "^10.5"
     },
     "autoload": {
         "psr-4": {
