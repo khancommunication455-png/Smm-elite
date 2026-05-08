@@ -48,7 +48,9 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+        run: |
+          unset COMPOSER_NO_DEV
+          composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Prepare environment
         run: |
