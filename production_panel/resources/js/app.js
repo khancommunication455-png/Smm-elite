@@ -1,1 +1,12 @@
-import Alpine from 'alpinejs';\nimport axios from 'axios';\n\nwindow.Alpine = Alpine;\nwindow.axios = axios;\n\nAlpine.start();\n\n// CSRF token setup for axios\naxios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content');\n\nconsole.log('SMM Elite panel ready!');\n
+import Alpine from 'alpinejs';
+import axios from 'axios';
+
+window.Alpine = Alpine;
+window.axios = axios;
+
+Alpine.start();
+
+// CSRF token setup for axios
+axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+console.log('SMM Elite panel ready!');
