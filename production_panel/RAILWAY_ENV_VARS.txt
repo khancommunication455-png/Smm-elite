@@ -1,0 +1,62 @@
+# ─────────────────────────────────────────────────────────────
+# RAILWAY ENVIRONMENT VARIABLES
+# Copy each of these into Railway → Your App → Variables tab
+# Do NOT upload this file anywhere — it's for reference only
+# ─────────────────────────────────────────────────────────────
+
+# App
+APP_NAME=SMM Elite
+APP_ENV=production
+APP_KEY=                        # Run: php artisan key:generate --show
+APP_DEBUG=false
+APP_URL=https://yourapp.up.railway.app   # Update after Railway gives you a domain
+
+# Logging
+LOG_CHANNEL=stack
+LOG_LEVEL=error
+
+# ── Database (Railway auto-fills these when you link MySQL) ──
+DB_CONNECTION=mysql
+DB_HOST=${{MySQL.MYSQLHOST}}
+DB_PORT=${{MySQL.MYSQLPORT}}
+DB_DATABASE=${{MySQL.MYSQLDATABASE}}
+DB_USERNAME=${{MySQL.MYSQLUSER}}
+DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+
+# ── Redis (Railway auto-fills these when you link Redis) ─────
+REDIS_URL=${{Redis.REDIS_URL}}
+REDIS_HOST=${{Redis.REDISHOST}}
+REDIS_PORT=${{Redis.REDISPORT}}
+REDIS_PASSWORD=${{Redis.REDISPASSWORD}}
+
+# ── Cache / Queue / Session ──────────────────────────────────
+CACHE_DRIVER=redis
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
+SESSION_LIFETIME=120
+SESSION_SECURE_COOKIE=true
+BROADCAST_DRIVER=log
+FILESYSTEM_DISK=local
+
+# ── Mail (Brevo/Sendinblue — free 300 emails/day) ───────────
+MAIL_MAILER=smtp
+MAIL_HOST=smtp-relay.brevo.com
+MAIL_PORT=587
+MAIL_USERNAME=your_brevo_login_email
+MAIL_PASSWORD=your_brevo_smtp_key
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@yourdomain.com
+MAIL_FROM_NAME=SMM Elite
+
+# ── Stripe ───────────────────────────────────────────────────
+STRIPE_KEY=pk_live_xxxxxxxxxxxx
+STRIPE_SECRET=sk_live_xxxxxxxxxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxx
+
+# ── PayPal ───────────────────────────────────────────────────
+PAYPAL_CLIENT_ID=
+PAYPAL_SECRET=
+PAYPAL_MODE=live
+
+# ── Sentry (optional error tracking — free tier available) ───
+SENTRY_LARAVEL_DSN=

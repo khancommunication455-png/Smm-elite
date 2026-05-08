@@ -1,0 +1,1 @@
+module.exports = {\n  content: [\n    \"./resources/**/*.blade.php\",\n    \"./resources/**/*.js\",\n    \"./resources/**/*.vue\",\n  ],\n  theme: {\n    extend: {\n      colors: {\n        primary: \"#4d8eff\",\n        dark: \"#0b1326\",\n      },\n    },\n  },\n  plugins: [],\n};\n

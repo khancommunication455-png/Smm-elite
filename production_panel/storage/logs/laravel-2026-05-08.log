@@ -1,0 +1,4 @@
+[2026-05-08 02:37:55] local.ERROR: Trait "Illuminate\Foundation\Auth\SendsPasswordResetEmails" not found {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Trait \"Illuminate\\Foundation\\Auth\\SendsPasswordResetEmails\" not found at C:/Users/kbros/Desktop/production_panel/app/Http/Controllers/Auth/ForgotPasswordController.php:9)
+[stacktrace]
+#0 {main}
+"} 

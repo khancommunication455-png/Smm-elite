@@ -1,0 +1,139 @@
+version: '3.9'
+
+services:
+  # ── Application ────────────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    image: smm-panel:latest
+    container_name: smm_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      APP_ENV: production
+      APP_DEBUG: 'false'
+      APP_KEY: ${APP_KEY}
+      APP_URL: ${APP_URL}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      MAIL_MAILER: ${MAIL_MAILER:-smtp}
+      STRIPE_SECRET: ${STRIPE_SECRET}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+    volumes:
+      - app_storage:/var/www/html/storage
+    ports:
+      - '${APP_PORT:-80}:80'
+    networks:
+      - smm_network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost/up']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Queue Worker ────────────────────────────────────────────────────────────
+  worker:
+    image: smm-panel:latest
+    container_name: smm_worker
+    restart: unless-stopped
+    command: php artisan queue:work redis --sleep=3 --tries=3 --timeout=90 --max-jobs=500
+    depends_on:
+      - app
+      - redis
+    environment:
+      APP_ENV: production
+      APP_KEY: ${APP_KEY}
+      DB_HOST: db
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: redis
+    volumes:
+      - app_storage:/var/www/html/storage
+    networks:
+      - smm_network
+
+  # ── Scheduler ──────────────────────────────────────────────────────────────
+  scheduler:
+    image: smm-panel:latest
+    container_name: smm_scheduler
+    restart: unless-stopped
+    # Runs artisan schedule:work which loops every minute (no cron needed in Docker)
+    command: php artisan schedule:work
+    depends_on:
+      - app
+      - redis
+    environment:
+      APP_ENV: production
+      APP_KEY: ${APP_KEY}
+      DB_HOST: db
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: redis
+    volumes:
+      - app_storage:/var/www/html/storage
+    networks:
+      - smm_network
+
+  # ── MySQL ──────────────────────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: smm_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    networks:
+      - smm_network
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p${DB_ROOT_PASSWORD}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ──────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: smm_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    networks:
+      - smm_network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
+  redis_data:
+  app_storage:
+
+networks:
+  smm_network:
+    driver: bridge

@@ -1,0 +1,72 @@
+# SMM Panel Audit & Refactor — Task Tracker
+
+## Phase 1 — Eliminate Duplicate Files (CRITICAL)
+- [x] Delete `app/Models/Models.php`
+- [x] Delete `app/Services/Services.php`
+- [x] Delete `app/Http/Controllers/MainControllers.php`
+- [x] Delete `app/Http/Controllers/UserControllers.php`
+
+## Phase 2 — Security: Mass Assignment & Auth
+- [x] Fix User.php `$fillable` (remove `is_admin`, `funds`, `status`)
+- [x] Add password complexity rules in RegisterController
+- [x] Fix session regeneration on register
+
+## Phase 3 — Order System Hardening
+- [x] Create `OrderService`
+- [x] Create `ProcessOrderJob` (async API submission)
+- [x] Refactor `OrderController` to use service + FormRequest
+- [x] Update `StoreOrderRequest` with dynamic min/max
+- [x] Add duplicate order prevention
+
+## Phase 4 — Payment System (Manual Only)
+- [x] Fix FundsController exchange rate (use service, not session)
+- [x] Add duplicate reference protection
+- [x] Use StorePaymentRequest FormRequest
+- [x] Remove stub Stripe/PayPal methods, keep webhook structure
+
+## Phase 5 — Queue & Job Reliability
+- [x] Create `ProcessOrderJob` with retries, backoff, timeout
+- [x] Create `SyncOrderStatusJob`
+- [x] Create health check endpoint
+- [x] Update Console Kernel (implied by job usage)
+
+## Phase 6 — Redis Integration
+- [x] Add Redis config to `database.php`
+- [x] Add service/category caching
+- [x] Verify cache/session/queue configs
+
+## Phase 7 — Database Optimization
+- [x] Fix AnalyticsController N+1 (7 queries → 1)
+- [x] Fix ReferralController N+1
+- [x] Add pagination to TicketController
+- [x] Add `reference` index on transactions
+
+## Phase 8 — Security Hardening
+- [x] Fix SQL injection in ServiceController LIKE
+- [x] Fix SQL injection in AdminController user search
+- [x] Create SecureHeaders middleware
+- [x] Register in HTTP Kernel
+
+## Phase 9 — Error Handling & Logging
+- [x] Fix logging config (daily + stderr)
+- [x] Fix typo in logging.php
+- [x] Add Exception Handler
+
+## Phase 10 — Rate Limiting
+- [x] Add named rate limiters in RouteServiceProvider
+
+## Phase 11 — Docker & Deployment
+- [x] Fix nixpacks.toml
+- [x] Fix Procfile
+- [x] Fix console.php
+- [x] Add startup env validation
+
+## Phase 12 — Testing
+- [x] Create OrderTest
+- [x] Create PaymentTest
+- [x] Create AuthTest
+- [x] Create AdminTest
+
+## Phase 13 — Final Hardening
+- [x] Update .env.example
+- [x] Create production checklist
