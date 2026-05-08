@@ -27,7 +27,6 @@ class ProcessPaymentWebhook implements ShouldQueue
     public int $tries = 5;
     public int $timeout = 30;
     public int $maxExceptions = 3;
-    public bool $afterCommit = true;
 
     public function __construct(public int $paymentWebhookEventId)
     {
