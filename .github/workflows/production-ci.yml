@@ -1,0 +1,109 @@
+name: Production CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  laravel:
+    name: Laravel quality gates
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: production_panel
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: smm_panel_test
+          POSTGRES_USER: smm_user
+          POSTGRES_PASSWORD: smm_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U smm_user -d smm_panel_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, bcmath, gd, zip, pcntl, pdo_pgsql, redis
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+          php artisan config:clear
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: smm_panel_test
+          DB_USERNAME: smm_user
+          DB_PASSWORD: smm_password
+          QUEUE_CONNECTION: redis
+          CACHE_DRIVER: redis
+          SESSION_DRIVER: redis
+          REDIS_HOST: 127.0.0.1
+
+      - name: Run migrations
+        run: php artisan migrate --force
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: smm_panel_test
+          DB_USERNAME: smm_user
+          DB_PASSWORD: smm_password
+
+      - name: Static syntax scan
+        run: find app config database routes -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Laravel tests
+        run: php artisan test
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: smm_panel_test
+          DB_USERNAME: smm_user
+          DB_PASSWORD: smm_password
+          QUEUE_CONNECTION: redis
+          CACHE_DRIVER: redis
+          SESSION_DRIVER: redis
+          REDIS_HOST: 127.0.0.1
+
+      - name: Pint lint
+        run: ./vendor/bin/pint --test
+
+  docker:
+    name: Docker build validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production image
+        run: docker build --target app -t smm-panel:ci production_panel

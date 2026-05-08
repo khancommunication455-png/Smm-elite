@@ -24,7 +24,7 @@ return new class extends Migration {
 
         Schema::create('payment_logs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->unsignedBigInteger('transaction_id')->nullable();
             $table->string('gateway'); // stripe, paypal, manual
             $table->string('status'); // pending, completed, failed
@@ -36,6 +36,7 @@ return new class extends Migration {
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('transaction_id')->references('id')->on('transactions')->onDelete('set null');
             $table->index(['user_id', 'gateway', 'created_at']);
+            $table->index(['gateway', 'reference'], 'payment_logs_gateway_reference_idx');
             $table->index(['status', 'created_at']);
         });
 

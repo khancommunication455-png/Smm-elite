@@ -17,9 +17,10 @@ RUN apk add --no-cache \
     bash \
     nginx \
     supervisor \
-    redis \
+    postgresql-client \
     git \
     curl \
+    libpq-dev \
     libpng-dev \
     libjpeg-turbo-dev \
     libzip-dev \
@@ -27,7 +28,7 @@ RUN apk add --no-cache \
     icu-dev \
     && docker-php-ext-configure gd --with-jpeg \
     && docker-php-ext-install \
-        pdo_mysql \
+        pdo_pgsql \
         mbstring \
         zip \
         exif \

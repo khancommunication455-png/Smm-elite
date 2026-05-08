@@ -28,6 +28,11 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
         });
 
+        RateLimiter::for('webhooks', function (Request $request) {
+            // Payment gateways can retry in bursts, but IP-based limits cap abuse.
+            return Limit::perMinute(120)->by($request->ip());
+        });
+
         RateLimiter::for('login', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip());
         });
