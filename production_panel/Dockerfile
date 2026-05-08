@@ -4,7 +4,13 @@ FROM node:20-alpine AS assets
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm ci --ignore-scripts
+# Use deterministic npm ci when a lockfile is present; fall back to npm install
+# for this repository's current source snapshot, which does not include one.
+RUN if [ -f package-lock.json ]; then \
+        npm ci --ignore-scripts; \
+    else \
+        npm install --ignore-scripts --no-audit --no-fund; \
+    fi
 
 COPY . .
 RUN npm run build

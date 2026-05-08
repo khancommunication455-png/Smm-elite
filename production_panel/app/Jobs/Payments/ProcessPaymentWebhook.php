@@ -22,6 +22,9 @@ use Throwable;
  */
 class ProcessPaymentWebhook implements ShouldQueue
 {
+    private const PAYPAL_ORDER_APPROVED = 'CHECKOUT.ORDER.APPROVED';
+    private const PAYPAL_CAPTURE_COMPLETED = 'PAYMENT.CAPTURE.COMPLETED';
+
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 5;
@@ -112,12 +115,7 @@ class ProcessPaymentWebhook implements ShouldQueue
         $userId = (int) Arr::get($resource, 'custom_id', Arr::get($resource, 'purchase_units.0.custom_id'));
         $amount = (float) Arr::get($resource, 'amount.value', Arr::get($resource, 'purchase_units.0.amount.value', 0));
 
-        if ($event->event_type === 'PAYMENT.CAPTURE.COMPLETED') {
-            $ledger->creditDeposit('paypal', $userId, $amount, $reference, $resource);
-            return;
-        }
-
-        if ($event->event_type === 'CHECKOUT.ORDER.APPROVED') {
+        if ($event->event_type === self::PAYPAL_ORDER_APPROVED) {
             Log::info('PayPal order approved; waiting for capture completion before crediting funds.', [
                 'event_id' => $event->gateway_event_id,
                 'reference' => $reference,
@@ -125,8 +123,18 @@ class ProcessPaymentWebhook implements ShouldQueue
             return;
         }
 
+        if ($event->event_type === self::PAYPAL_CAPTURE_COMPLETED && $this->isCompletedPayPalCapture($resource)) {
+            $ledger->creditDeposit('paypal', $userId, $amount, $reference, $resource);
+            return;
+        }
+
         if (str_contains($event->event_type, 'FAILED') || str_contains($event->event_type, 'DENIED')) {
             $ledger->recordFailure('paypal', $userId ?: null, $amount, $reference, 'PayPal reported '.$event->event_type, $resource);
         }
+    }
+
+    private function isCompletedPayPalCapture(array $resource): bool
+    {
+        return strtoupper((string) Arr::get($resource, 'status')) === 'COMPLETED';
     }
 }

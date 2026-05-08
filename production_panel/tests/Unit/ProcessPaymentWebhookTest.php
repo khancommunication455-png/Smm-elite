@@ -48,6 +48,7 @@ class ProcessPaymentWebhookTest extends TestCase
     {
         $resource = [
             'id' => 'CAPTURE-123',
+            'status' => 'COMPLETED',
             'custom_id' => '42',
             'amount' => ['value' => '25.00'],
         ];
@@ -63,6 +64,29 @@ class ProcessPaymentWebhookTest extends TestCase
         $ledger->shouldReceive('creditDeposit')
             ->once()
             ->with('paypal', 42, 25.0, 'CAPTURE-123', $resource);
+        $ledger->shouldNotReceive('recordFailure');
+
+        $this->processPayPal($event, $ledger);
+    }
+
+    public function test_paypal_capture_completed_event_without_completed_resource_status_does_not_credit_balance(): void
+    {
+        $event = new PaymentWebhookEvent([
+            'gateway' => 'paypal',
+            'gateway_event_id' => 'WH-CAPTURE-PENDING-1',
+            'event_type' => 'PAYMENT.CAPTURE.COMPLETED',
+            'payload' => [
+                'resource' => [
+                    'id' => 'CAPTURE-PENDING-123',
+                    'status' => 'PENDING',
+                    'custom_id' => '42',
+                    'amount' => ['value' => '25.00'],
+                ],
+            ],
+        ]);
+
+        $ledger = Mockery::mock(PaymentLedgerService::class);
+        $ledger->shouldNotReceive('creditDeposit');
         $ledger->shouldNotReceive('recordFailure');
 
         $this->processPayPal($event, $ledger);
