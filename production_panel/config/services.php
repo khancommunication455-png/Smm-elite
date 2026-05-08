@@ -22,12 +22,14 @@ return [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'webhook_tolerance' => env('STRIPE_WEBHOOK_TOLERANCE', 300),
     ],
 
     'paypal' => [
         'client_id' => env('PAYPAL_CLIENT_ID'),
         'client_secret' => env('PAYPAL_CLIENT_SECRET'),
         'app_id' => env('PAYPAL_APP_ID'),
+        'webhook_id' => env('PAYPAL_WEBHOOK_ID'),
         'mode' => env('PAYPAL_MODE', 'sandbox'),
     ],
 

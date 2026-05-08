@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'default' => env('QUEUE_CONNECTION', 'database'),
+    'default' => env('QUEUE_CONNECTION', 'redis'),
     'connections' => [
         'sync' => [
             'driver' => 'sync',
@@ -18,14 +18,14 @@ return [
             'driver' => 'redis',
             'connection' => 'default',
             'queue' => env('REDIS_QUEUE', 'default'),
-            'retry_after' => 90,
-            'block_for' => null,
-            'after_commit' => false,
+            'retry_after' => env('QUEUE_RETRY_AFTER', 120),
+            'block_for' => 5,
+            'after_commit' => true,
         ],
     ],
     'failed' => [
         'driver' => env('QUEUE_FAILED_DRIVER', 'database'),
-        'database' => env('DB_CONNECTION', 'mysql'),
+        'database' => env('DB_CONNECTION', 'pgsql'),
         'table' => 'failed_jobs',
     ],
 ];
