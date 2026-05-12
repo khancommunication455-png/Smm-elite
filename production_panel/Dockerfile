@@ -3,8 +3,12 @@ FROM node:20-alpine AS assets
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm ci --ignore-scripts
+COPY package*.json ./
+RUN if [ -f package-lock.json ]; then \
+        npm ci --ignore-scripts; \
+    else \
+        npm install --ignore-scripts; \
+    fi
 
 COPY . .
 RUN npm run build
